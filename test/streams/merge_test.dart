@@ -43,4 +43,28 @@ void main() {
       expect(e, isException);
     });
   });
+
+  test('rx.Observable.merge does not deal properly', () async {
+    // This will fail:
+    // const list<num> expectedOutput = const <num> [1, 2, 3, 4, 5, 6];
+    const list<num> expectedOutput = const <num> [1, 4, 2, 5, 3, 6];
+
+    StreamController<num> sc1 = new StreamController<num>();
+    StreamController<num> sc2 = new StreamController<num>();
+
+    int count = 0;
+    Stream<num> observable = new Observable<num>.merge([sc1.stream, sc2.stream]);
+
+    observable.listen(expectAsync1((num result) {
+      // test to see if the combined output matches
+      expect(result, expectedOutput[count++]);
+    }, count: expectedOutput.length));
+
+    sc1.add(1);
+    sc1.add(2);
+    sc1.add(3);
+    sc2.add(4);
+    sc2.add(5);
+    sc2.add(6);
+  });
 }
